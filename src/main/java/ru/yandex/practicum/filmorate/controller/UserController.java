@@ -18,7 +18,7 @@ public class UserController {
     private final Map<Long, User> users = new HashMap<>();
 
     @PostMapping
-    public User addUser(@RequestBody User user){
+    public User addUser(@RequestBody User user) {
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
             throw new ConditionsNotMetException("Электронная почта не может быть пустой и должна содержать символ @");
         }
@@ -31,13 +31,14 @@ public class UserController {
             user.setLogin(user.getName());
         }
 
-        if(user.getBirthday().isAfter(LocalDate.now())){
+        if (user.getBirthday().isAfter(LocalDate.now())) {
             throw new ConditionsNotMetException("Дата рождения не может быть в будущем");
         }
         user.setId(getNextId());
         users.put(user.getId(), user);
         return user;
     }
+
     private long getNextId() {
         long currentMaxId = users.keySet()
                 .stream()
@@ -48,7 +49,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@RequestBody User newUser){
+    public User update(@RequestBody User newUser) {
         if (newUser.getEmail() == null || newUser.getEmail().isBlank() || !newUser.getEmail().contains("@")) {
             throw new ConditionsNotMetException("Электронная почта не может быть пустой и должна содержать символ @");
         }
@@ -60,7 +61,7 @@ public class UserController {
             newUser.setLogin(newUser.getName());
         }
 
-        if(newUser.getBirthday().isAfter(LocalDate.now())){
+        if (newUser.getBirthday().isAfter(LocalDate.now())) {
             throw new ConditionsNotMetException("Дата рождения не может быть в будущем");
         }
         if (users.containsKey(newUser.getId())) {
