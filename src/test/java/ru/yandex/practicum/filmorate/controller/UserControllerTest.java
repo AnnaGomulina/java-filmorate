@@ -20,215 +20,282 @@ class UserControllerTest {
         controller = new UserController();
     }
 
-    private User createValidUser() {
+    @Test
+    void addUser_shouldAddUserWithValidData() {
         User user = new User();
         user.setEmail("test@example.com");
-        user.setLogin("testLogin");
+        user.setLogin("validLogin");
         user.setName("Test Name");
         user.setBirthday(LocalDate.of(1990, 1, 1));
-        return user;
-    }
-
-    @Test
-    void addUser_shouldAddUserWithGeneratedId() {
-        User user = createValidUser();
 
         User added = controller.addUser(user);
 
         assertNotNull(added.getId());
         assertEquals("test@example.com", added.getEmail());
-        assertEquals("testLogin", added.getLogin());
+        assertEquals("validLogin", added.getLogin());
         assertEquals("Test Name", added.getName());
         assertEquals(LocalDate.of(1990, 1, 1), added.getBirthday());
-
-        Collection<User> all = controller.findAll();
-        assertEquals(1, all.size());
-        assertTrue(all.contains(added));
+        assertTrue(controller.findAll().contains(added));
     }
 
     @Test
-    void addUser_shouldGenerateUniqueIds() {
-        User user1 = createValidUser();
-        User user2 = createValidUser();
-        user2.setEmail("second@example.com");
-        user2.setLogin("secondLogin");
+    void addUser_shouldSetNameToLoginWhenNameIsNull() {
+        User user = new User();
+        user.setEmail("test@example.com");
+        user.setLogin("validLogin");
+        user.setName(null);
+        user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        User added1 = controller.addUser(user1);
-        User added2 = controller.addUser(user2);
+        User added = controller.addUser(user);
 
-        assertNotEquals(added1.getId(), added2.getId());
-        assertEquals(2, controller.findAll().size());
+        assertEquals("validLogin", added.getName());
+    }
+
+    @Test
+    void addUser_shouldSetNameToLoginWhenNameIsBlank() {
+        User user = new User();
+        user.setEmail("test@example.com");
+        user.setLogin("validLogin");
+        user.setName("   ");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+
+        User added = controller.addUser(user);
+
+        assertEquals("validLogin", added.getName());
     }
 
     @Test
     void addUser_shouldThrowWhenEmailIsNull() {
-        User user = createValidUser();
+        User user = new User();
         user.setEmail(null);
+        user.setLogin("validLogin");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        ConditionsNotMetException ex = assertThrows(ConditionsNotMetException.class,
-                () -> controller.addUser(user));
+        ConditionsNotMetException ex = assertThrows(ConditionsNotMetException.class, () -> controller.addUser(user));
         assertTrue(ex.getMessage().contains("Электронная почта"));
     }
 
     @Test
     void addUser_shouldThrowWhenEmailIsBlank() {
-        User user = createValidUser();
+        User user = new User();
         user.setEmail("   ");
+        user.setLogin("validLogin");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        assertThrows(ConditionsNotMetException.class, () -> controller.addUser(user));
+        ConditionsNotMetException ex = assertThrows(ConditionsNotMetException.class, () -> controller.addUser(user));
+        assertTrue(ex.getMessage().contains("Электронная почта"));
     }
 
     @Test
-    void addUser_shouldThrowWhenEmailWithoutAt() {
-        User user = createValidUser();
-        user.setEmail("invalid-email");
+    void addUser_shouldThrowWhenEmailDoesNotContainAt() {
+        User user = new User();
+        user.setEmail("testexample.com");
+        user.setLogin("validLogin");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        assertThrows(ConditionsNotMetException.class, () -> controller.addUser(user));
+        ConditionsNotMetException ex = assertThrows(ConditionsNotMetException.class, () -> controller.addUser(user));
+        assertTrue(ex.getMessage().contains("Электронная почта"));
     }
 
     @Test
     void addUser_shouldThrowWhenLoginIsNull() {
-        User user = createValidUser();
+        User user = new User();
+        user.setEmail("test@example.com");
         user.setLogin(null);
+        user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        ConditionsNotMetException ex = assertThrows(ConditionsNotMetException.class,
-                () -> controller.addUser(user));
+        ConditionsNotMetException ex = assertThrows(ConditionsNotMetException.class, () -> controller.addUser(user));
         assertTrue(ex.getMessage().contains("Логин"));
     }
 
     @Test
     void addUser_shouldThrowWhenLoginIsBlank() {
-        User user = createValidUser();
+        User user = new User();
+        user.setEmail("test@example.com");
         user.setLogin("   ");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        assertThrows(ConditionsNotMetException.class, () -> controller.addUser(user));
+        ConditionsNotMetException ex = assertThrows(ConditionsNotMetException.class, () -> controller.addUser(user));
+        assertTrue(ex.getMessage().contains("Логин"));
     }
 
     @Test
     void addUser_shouldThrowWhenLoginContainsSpace() {
-        User user = createValidUser();
-        user.setLogin("test login");
+        User user = new User();
+        user.setEmail("test@example.com");
+        user.setLogin("invalid login");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        ConditionsNotMetException ex = assertThrows(ConditionsNotMetException.class,
-                () -> controller.addUser(user));
-        assertTrue(ex.getMessage().contains("пробелы"));
+        ConditionsNotMetException ex = assertThrows(ConditionsNotMetException.class, () -> controller.addUser(user));
+        assertTrue(ex.getMessage().contains("Логин"));
     }
 
     @Test
-    void addUser_shouldThrowWhenBirthdayInFuture() {
-        User user = createValidUser();
+    void addUser_shouldThrowWhenBirthdayIsInFuture() {
+        User user = new User();
+        user.setEmail("test@example.com");
+        user.setLogin("validLogin");
         user.setBirthday(LocalDate.now().plusDays(1));
 
-        ConditionsNotMetException ex = assertThrows(ConditionsNotMetException.class,
-                () -> controller.addUser(user));
+        ConditionsNotMetException ex = assertThrows(ConditionsNotMetException.class, () -> controller.addUser(user));
         assertTrue(ex.getMessage().contains("Дата рождения"));
     }
 
     @Test
-    void addUser_shouldThrowNpeWhenBirthdayIsNull() {
-        User user = createValidUser();
-        user.setBirthday(null);
+    void addUser_shouldAssignIncrementingIds() {
+        User user1 = new User();
+        user1.setEmail("user1@example.com");
+        user1.setLogin("user1");
+        user1.setBirthday(LocalDate.of(1990, 1, 1));
 
-        assertThrows(NullPointerException.class, () -> controller.addUser(user));
-    }
+        User user2 = new User();
+        user2.setEmail("user2@example.com");
+        user2.setLogin("user2");
+        user2.setBirthday(LocalDate.of(1991, 2, 2));
 
-    @Test
-    void addUser_shouldNotOverrideNameWhenProvided() {
-        User user = createValidUser();
-        user.setName("Custom Name");
+        User added1 = controller.addUser(user1);
+        User added2 = controller.addUser(user2);
 
-        User added = controller.addUser(user);
-
-        assertEquals("Custom Name", added.getName());
-        assertEquals("testLogin", added.getLogin());
+        assertEquals(1L, added1.getId());
+        assertEquals(2L, added2.getId());
     }
 
     @Test
     void update_shouldUpdateExistingUser() {
-        User original = controller.addUser(createValidUser());
-        Long id = original.getId();
+        User original = new User();
+        original.setEmail("original@example.com");
+        original.setLogin("originalLogin");
+        original.setName("Original Name");
+        original.setBirthday(LocalDate.of(1990, 1, 1));
+        User added = controller.addUser(original);
 
-        User update = new User();
-        update.setId(id);
-        update.setEmail("updated@example.com");
-        update.setLogin("updatedLogin");
-        update.setName("Updated Name");
-        update.setBirthday(LocalDate.of(2000, 2, 2));
+        User updated = new User();
+        updated.setId(added.getId());
+        updated.setEmail("updated@example.com");
+        updated.setLogin("updatedLogin");
+        updated.setName("Updated Name");
+        updated.setBirthday(LocalDate.of(1995, 5, 5));
 
-        User updated = controller.update(update);
+        User result = controller.update(updated);
 
-        assertEquals(id, updated.getId());
-        assertEquals("updated@example.com", updated.getEmail());
-        assertEquals("updatedLogin", updated.getLogin());
-        assertEquals("Updated Name", updated.getName());
-        assertEquals(LocalDate.of(2000, 2, 2), updated.getBirthday());
+        assertEquals(added.getId(), result.getId());
+        assertEquals("updated@example.com", result.getEmail());
+        assertEquals("updatedLogin", result.getLogin());
+        assertEquals("Updated Name", result.getName());
+        assertEquals(LocalDate.of(1995, 5, 5), result.getBirthday());
+        assertEquals(result, controller.findAll().iterator().next());
+    }
 
-        User fromStore = controller.findAll().iterator().next();
-        assertEquals("updated@example.com", fromStore.getEmail());
+    @Test
+    void update_shouldSetNameToLoginWhenNameIsNull() {
+        User original = new User();
+        original.setEmail("original@example.com");
+        original.setLogin("originalLogin");
+        original.setName("Original Name");
+        original.setBirthday(LocalDate.of(1990, 1, 1));
+        User added = controller.addUser(original);
+
+        User updated = new User();
+        updated.setId(added.getId());
+        updated.setEmail("updated@example.com");
+        updated.setLogin("updatedLogin");
+        updated.setName(null);
+        updated.setBirthday(LocalDate.of(1995, 5, 5));
+
+        User result = controller.update(updated);
+
+        assertEquals("updatedLogin", result.getName());
+    }
+
+    @Test
+    void update_shouldThrowWhenEmailIsInvalid() {
+        User original = new User();
+        original.setEmail("original@example.com");
+        original.setLogin("originalLogin");
+        original.setBirthday(LocalDate.of(1990, 1, 1));
+        User added = controller.addUser(original);
+
+        User updated = new User();
+        updated.setId(added.getId());
+        updated.setEmail("invalid");
+        updated.setLogin("updatedLogin");
+        updated.setBirthday(LocalDate.of(1995, 5, 5));
+
+        ConditionsNotMetException ex = assertThrows(ConditionsNotMetException.class, () -> controller.update(updated));
+        assertTrue(ex.getMessage().contains("Электронная почта"));
+    }
+
+    @Test
+    void update_shouldThrowWhenLoginIsInvalid() {
+        User original = new User();
+        original.setEmail("original@example.com");
+        original.setLogin("originalLogin");
+        original.setBirthday(LocalDate.of(1990, 1, 1));
+        User added = controller.addUser(original);
+
+        User updated = new User();
+        updated.setId(added.getId());
+        updated.setEmail("updated@example.com");
+        updated.setLogin("invalid login");
+        updated.setBirthday(LocalDate.of(1995, 5, 5));
+
+        ConditionsNotMetException ex = assertThrows(ConditionsNotMetException.class, () -> controller.update(updated));
+        assertTrue(ex.getMessage().contains("Логин"));
+    }
+
+    @Test
+    void update_shouldThrowWhenBirthdayIsInFuture() {
+        User original = new User();
+        original.setEmail("original@example.com");
+        original.setLogin("originalLogin");
+        original.setBirthday(LocalDate.of(1990, 1, 1));
+        User added = controller.addUser(original);
+
+        User updated = new User();
+        updated.setId(added.getId());
+        updated.setEmail("updated@example.com");
+        updated.setLogin("updatedLogin");
+        updated.setBirthday(LocalDate.now().plusDays(1));
+
+        ConditionsNotMetException ex = assertThrows(ConditionsNotMetException.class, () -> controller.update(updated));
+        assertTrue(ex.getMessage().contains("Дата рождения"));
     }
 
     @Test
     void update_shouldThrowWhenUserNotFound() {
-        User update = createValidUser();
-        update.setId(999L);
+        User updated = new User();
+        updated.setId(999L);
+        updated.setEmail("updated@example.com");
+        updated.setLogin("updatedLogin");
+        updated.setBirthday(LocalDate.of(1995, 5, 5));
 
-        NotFoundException ex = assertThrows(NotFoundException.class,
-                () -> controller.update(update));
-        assertTrue(ex.getMessage().contains("999"));
+        NotFoundException ex = assertThrows(NotFoundException.class, () -> controller.update(updated));
+        assertTrue(ex.getMessage().contains("Пользователь с id = 999 не найден"));
     }
 
     @Test
-    void update_shouldThrowWhenEmailInvalid() {
-        User update = createValidUser();
-        update.setId(1L);
-        update.setEmail("invalid");
-
-        assertThrows(ConditionsNotMetException.class, () -> controller.update(update));
-    }
-
-    @Test
-    void update_shouldThrowWhenLoginInvalid() {
-        User update = createValidUser();
-        update.setId(1L);
-        update.setLogin("bad login");
-
-        assertThrows(ConditionsNotMetException.class, () -> controller.update(update));
-    }
-
-    @Test
-    void update_shouldThrowWhenBirthdayInFuture() {
-        User update = createValidUser();
-        update.setId(1L);
-        update.setBirthday(LocalDate.now().plusDays(1));
-
-        assertThrows(ConditionsNotMetException.class, () -> controller.update(update));
-    }
-
-    @Test
-    void update_shouldThrowNpeWhenBirthdayIsNull() {
-        User update = createValidUser();
-        update.setId(1L);
-        update.setBirthday(null);
-
-        assertThrows(NullPointerException.class, () -> controller.update(update));
-    }
-
-    @Test
-    void findAll_shouldReturnEmptyWhenNoUsers() {
-        assertTrue(controller.findAll().isEmpty());
+    void findAll_shouldReturnEmptyCollectionWhenNoUsers() {
+        Collection<User> users = controller.findAll();
+        assertTrue(users.isEmpty());
     }
 
     @Test
     void findAll_shouldReturnAllUsers() {
-        User user1 = createValidUser();
-        User user2 = createValidUser();
-        user2.setEmail("second@example.com");
-        user2.setLogin("secondLogin");
-
+        User user1 = new User();
+        user1.setEmail("user1@example.com");
+        user1.setLogin("user1");
+        user1.setBirthday(LocalDate.of(1990, 1, 1));
         controller.addUser(user1);
+
+        User user2 = new User();
+        user2.setEmail("user2@example.com");
+        user2.setLogin("user2");
+        user2.setBirthday(LocalDate.of(1991, 2, 2));
         controller.addUser(user2);
 
-        Collection<User> all = controller.findAll();
-        assertEquals(2, all.size());
+        Collection<User> users = controller.findAll();
+        assertEquals(2, users.size());
+        assertTrue(users.contains(user1));
+        assertTrue(users.contains(user2));
     }
 }

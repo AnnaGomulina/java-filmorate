@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Collection;
 
@@ -15,164 +14,236 @@ import static org.junit.jupiter.api.Assertions.*;
 class FilmControllerTest {
 
     private FilmController filmController;
-    private Film validFilm;
 
     @BeforeEach
     void setUp() {
         filmController = new FilmController();
-        validFilm = new Film();
-        validFilm.setName("Valid Film");
-        validFilm.setDescription("Valid description");
-        validFilm.setReleaseDate(LocalDate.of(2000, 1, 1));
-        validFilm.setDuration(Duration.ofMinutes(120));
+    }
+
+    private Film createValidFilm() {
+        Film film = new Film();
+        film.setName("Test Film");
+        film.setDescription("Test Description");
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(120L);
+        return film;
     }
 
     @Test
-    void addFilm_shouldAddFilmWithId() {
-        Film added = filmController.addFilm(validFilm);
+    void addFilm_shouldAddValidFilmAndAssignId() {
+        Film film = createValidFilm();
+        Film added = filmController.addFilm(film);
+
         assertNotNull(added.getId());
-        assertEquals("Valid Film", added.getName());
-        assertEquals("Valid description", added.getDescription());
+        assertEquals(1L, added.getId());
+        assertEquals("Test Film", added.getName());
+        assertEquals("Test Description", added.getDescription());
         assertEquals(LocalDate.of(2000, 1, 1), added.getReleaseDate());
-        assertEquals(Duration.ofMinutes(120), added.getDuration());
+        assertEquals(120L, added.getDuration());
+
+        Collection<Film> all = filmController.findAll();
+        assertEquals(1, all.size());
+        assertTrue(all.contains(added));
     }
 
     @Test
-    void addFilm_shouldThrowWhenNameIsBlank() {
-        validFilm.setName(" ");
-        assertThrows(ConditionsNotMetException.class, () -> filmController.addFilm(validFilm));
+    void addFilm_shouldAssignIncrementingIds() {
+        Film first = createValidFilm();
+        Film second = createValidFilm();
+        second.setName("Second Film");
+
+        Film addedFirst = filmController.addFilm(first);
+        Film addedSecond = filmController.addFilm(second);
+
+        assertEquals(1L, addedFirst.getId());
+        assertEquals(2L, addedSecond.getId());
+        assertEquals(2, filmController.findAll().size());
     }
 
     @Test
     void addFilm_shouldThrowWhenNameIsNull() {
-        validFilm.setName(null);
-        assertThrows(ConditionsNotMetException.class, () -> filmController.addFilm(validFilm));
+        Film film = createValidFilm();
+        film.setName(null);
+
+        ConditionsNotMetException ex = assertThrows(
+                ConditionsNotMetException.class,
+                () -> filmController.addFilm(film)
+        );
+        assertEquals("Название не может быть пустым", ex.getMessage());
+    }
+
+    @Test
+    void addFilm_shouldThrowWhenNameIsBlank() {
+        Film film = createValidFilm();
+        film.setName("   ");
+
+        ConditionsNotMetException ex = assertThrows(
+                ConditionsNotMetException.class,
+                () -> filmController.addFilm(film)
+        );
+        assertEquals("Название не может быть пустым", ex.getMessage());
     }
 
     @Test
     void addFilm_shouldThrowWhenDescriptionTooLong() {
-        validFilm.setDescription("a".repeat(201));
-        assertThrows(ConditionsNotMetException.class, () -> filmController.addFilm(validFilm));
+        Film film = createValidFilm();
+        film.setDescription("a".repeat(201));
+
+        ConditionsNotMetException ex = assertThrows(
+                ConditionsNotMetException.class,
+                () -> filmController.addFilm(film)
+        );
+        assertEquals("Максимальная длина описания — 200 символов", ex.getMessage());
     }
 
     @Test
-    void addFilm_shouldThrowWhenReleaseDateTooEarly() {
-        validFilm.setReleaseDate(LocalDate.of(1895, 12, 27));
-        assertThrows(ConditionsNotMetException.class, () -> filmController.addFilm(validFilm));
+    void addFilm_shouldAcceptDescriptionOfExactly200Chars() {
+        Film film = createValidFilm();
+        film.setDescription("a".repeat(200));
+
+        assertDoesNotThrow(() -> filmController.addFilm(film));
+    }
+
+    @Test
+    void addFilm_shouldThrowWhenReleaseDateBefore1895_12_28() {
+        Film film = createValidFilm();
+        film.setReleaseDate(LocalDate.of(1895, 12, 27));
+
+        ConditionsNotMetException ex = assertThrows(
+                ConditionsNotMetException.class,
+                () -> filmController.addFilm(film)
+        );
+        assertEquals("Дата релиза — не раньше 28 декабря 1895 года", ex.getMessage());
+    }
+
+    @Test
+    void addFilm_shouldAcceptReleaseDateOn1895_12_28() {
+        Film film = createValidFilm();
+        film.setReleaseDate(LocalDate.of(1895, 12, 28));
+
+        assertDoesNotThrow(() -> filmController.addFilm(film));
     }
 
     @Test
     void addFilm_shouldThrowWhenDurationIsNegative() {
-        validFilm.setDuration(Duration.ofMinutes(-10));
-        assertThrows(ConditionsNotMetException.class, () -> filmController.addFilm(validFilm));
+        Film film = createValidFilm();
+        film.setDuration(-1L);
+
+        ConditionsNotMetException ex = assertThrows(
+                ConditionsNotMetException.class,
+                () -> filmController.addFilm(film)
+        );
+        assertEquals("Продолжительность фильма должна быть положительным числом", ex.getMessage());
     }
 
     @Test
-    void update_shouldUpdateFilm() {
-        Film added = filmController.addFilm(validFilm);
+    void addFilm_shouldAcceptZeroDuration() {
+        Film film = createValidFilm();
+        film.setDuration(0L);
+
+        assertDoesNotThrow(() -> filmController.addFilm(film));
+    }
+
+    @Test
+    void update_shouldUpdateExistingFilm() {
+        Film original = createValidFilm();
+        Film added = filmController.addFilm(original);
 
         Film update = new Film();
         update.setId(added.getId());
         update.setName("Updated Name");
         update.setDescription("Updated Description");
-        update.setReleaseDate(LocalDate.of(2001, 1, 1));
-        update.setDuration(Duration.ofMinutes(150));
+        update.setReleaseDate(LocalDate.of(2010, 5, 5));
+        update.setDuration(150L);
 
-        Film updated = filmController.update(update);
+        Film result = filmController.update(update);
 
-        assertEquals(added.getId(), updated.getId());
-        assertEquals("Updated Name", updated.getName());
-        assertEquals("Updated Description", updated.getDescription());
-        assertEquals(LocalDate.of(2001, 1, 1), updated.getReleaseDate());
-        assertEquals(Duration.ofMinutes(150), updated.getDuration());
+        assertEquals(added.getId(), result.getId());
+        assertEquals("Updated Name", result.getName());
+        assertEquals("Updated Description", result.getDescription());
+        assertEquals(LocalDate.of(2010, 5, 5), result.getReleaseDate());
+        assertEquals(150L, result.getDuration());
+
+        Collection<Film> all = filmController.findAll();
+        assertEquals(1, all.size());
+        assertEquals(result, all.iterator().next());
     }
 
     @Test
-    void update_shouldThrowNotFoundWhenFilmDoesNotExist() {
-        Film update = new Film();
+    void update_shouldThrowWhenIdNotFound() {
+        Film update = createValidFilm();
         update.setId(999L);
-        update.setName("Name");
-        update.setDescription("Desc");
-        update.setReleaseDate(LocalDate.now());
-        update.setDuration(Duration.ofMinutes(10));
 
-        assertThrows(NotFoundException.class, () -> filmController.update(update));
+        NotFoundException ex = assertThrows(
+                NotFoundException.class,
+                () -> filmController.update(update)
+        );
+        assertEquals("Фильм с id = 999 не найден", ex.getMessage());
     }
 
     @Test
-    void update_shouldThrowWhenNameIsBlank() {
-        Film added = filmController.addFilm(validFilm);
+    void update_shouldValidateName() {
+        Film original = createValidFilm();
+        Film added = filmController.addFilm(original);
 
-        Film update = new Film();
+        Film update = createValidFilm();
         update.setId(added.getId());
-        update.setName(" ");
-        update.setDescription("Desc");
-        update.setReleaseDate(LocalDate.now());
-        update.setDuration(Duration.ofMinutes(10));
+        update.setName(null);
 
         assertThrows(ConditionsNotMetException.class, () -> filmController.update(update));
     }
 
     @Test
-    void update_shouldThrowWhenDescriptionTooLong() {
-        Film added = filmController.addFilm(validFilm);
+    void update_shouldValidateDescriptionLength() {
+        Film original = createValidFilm();
+        Film added = filmController.addFilm(original);
 
-        Film update = new Film();
+        Film update = createValidFilm();
         update.setId(added.getId());
-        update.setName("Name");
         update.setDescription("a".repeat(201));
-        update.setReleaseDate(LocalDate.now());
-        update.setDuration(Duration.ofMinutes(10));
 
         assertThrows(ConditionsNotMetException.class, () -> filmController.update(update));
     }
 
     @Test
-    void update_shouldThrowWhenReleaseDateTooEarly() {
-        Film added = filmController.addFilm(validFilm);
+    void update_shouldValidateReleaseDate() {
+        Film original = createValidFilm();
+        Film added = filmController.addFilm(original);
 
-        Film update = new Film();
+        Film update = createValidFilm();
         update.setId(added.getId());
-        update.setName("Name");
-        update.setDescription("Desc");
         update.setReleaseDate(LocalDate.of(1895, 12, 27));
-        update.setDuration(Duration.ofMinutes(10));
 
         assertThrows(ConditionsNotMetException.class, () -> filmController.update(update));
     }
 
     @Test
-    void update_shouldThrowWhenDurationIsNegative() {
-        Film added = filmController.addFilm(validFilm);
+    void update_shouldValidateDuration() {
+        Film original = createValidFilm();
+        Film added = filmController.addFilm(original);
 
-        Film update = new Film();
+        Film update = createValidFilm();
         update.setId(added.getId());
-        update.setName("Name");
-        update.setDescription("Desc");
-        update.setReleaseDate(LocalDate.now());
-        update.setDuration(Duration.ofMinutes(-10));
+        update.setDuration(-5L);
 
         assertThrows(ConditionsNotMetException.class, () -> filmController.update(update));
     }
 
     @Test
-    void findAll_shouldReturnAllFilms() {
-        filmController.addFilm(validFilm);
+    void findAll_shouldReturnEmptyCollectionInitially() {
+        assertTrue(filmController.findAll().isEmpty());
+    }
 
-        Film second = new Film();
-        second.setName("Second Film");
-        second.setDescription("Second description");
-        second.setReleaseDate(LocalDate.of(2010, 1, 1));
-        second.setDuration(Duration.ofMinutes(90));
+    @Test
+    void findAll_shouldReturnAllAddedFilms() {
+        Film first = createValidFilm();
+        Film second = createValidFilm();
+        second.setName("Second");
+
+        filmController.addFilm(first);
         filmController.addFilm(second);
 
         Collection<Film> all = filmController.findAll();
         assertEquals(2, all.size());
-    }
-
-    @Test
-    void findAll_shouldReturnEmptyCollectionWhenNoFilms() {
-        Collection<Film> all = filmController.findAll();
-        assertTrue(all.isEmpty());
     }
 }

@@ -28,7 +28,7 @@ public class UserController {
         }
 
         if (user.getName() == null || user.getName().isBlank()) {
-            user.setLogin(user.getName());
+            user.setName(user.getLogin());
         }
 
         if (user.getBirthday().isAfter(LocalDate.now())) {
@@ -58,7 +58,7 @@ public class UserController {
         }
 
         if (newUser.getName() == null || newUser.getName().isBlank()) {
-            newUser.setLogin(newUser.getName());
+            newUser.setName(newUser.getLogin());
         }
 
         if (newUser.getBirthday().isAfter(LocalDate.now())) {
