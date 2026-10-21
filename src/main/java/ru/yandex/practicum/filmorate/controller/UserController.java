@@ -81,7 +81,7 @@ public class UserController {
 
             return oldUser;
         }
-        throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
+        throw new NotFoundException(String.format("Пользователь с id = %d не найден", newUser.getId()));
 
     }
 

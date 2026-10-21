@@ -21,7 +21,7 @@ class UserControllerTest {
     }
 
     @Test
-    void addUser_shouldAddUserWithValidData() {
+    void addUser_valid() {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("validLogin");
@@ -39,7 +39,7 @@ class UserControllerTest {
     }
 
     @Test
-    void addUser_shouldSetNameToLoginWhenNameIsNull() {
+    void addUser_nullNameDefaultsToLogin() {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("validLogin");
@@ -52,7 +52,7 @@ class UserControllerTest {
     }
 
     @Test
-    void addUser_shouldSetNameToLoginWhenNameIsBlank() {
+    void addUser_blankNameDefaultsToLogin() {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("validLogin");
@@ -65,7 +65,7 @@ class UserControllerTest {
     }
 
     @Test
-    void addUser_shouldThrowWhenEmailIsNull() {
+    void addUser_nullEmail() {
         User user = new User();
         user.setEmail(null);
         user.setLogin("validLogin");
@@ -76,7 +76,7 @@ class UserControllerTest {
     }
 
     @Test
-    void addUser_shouldThrowWhenEmailIsBlank() {
+    void addUser_blankEmail() {
         User user = new User();
         user.setEmail("   ");
         user.setLogin("validLogin");
@@ -87,7 +87,7 @@ class UserControllerTest {
     }
 
     @Test
-    void addUser_shouldThrowWhenEmailDoesNotContainAt() {
+    void addUser_emailWithoutAt() {
         User user = new User();
         user.setEmail("testexample.com");
         user.setLogin("validLogin");
@@ -98,7 +98,7 @@ class UserControllerTest {
     }
 
     @Test
-    void addUser_shouldThrowWhenLoginIsNull() {
+    void addUser_nullLogin() {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin(null);
@@ -109,7 +109,7 @@ class UserControllerTest {
     }
 
     @Test
-    void addUser_shouldThrowWhenLoginIsBlank() {
+    void addUser_blankLogin() {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("   ");
@@ -120,7 +120,7 @@ class UserControllerTest {
     }
 
     @Test
-    void addUser_shouldThrowWhenLoginContainsSpace() {
+    void addUser_loginWithSpace() {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("invalid login");
@@ -131,7 +131,7 @@ class UserControllerTest {
     }
 
     @Test
-    void addUser_shouldThrowWhenBirthdayIsInFuture() {
+    void addUser_futureBirthday() {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("validLogin");
@@ -142,7 +142,7 @@ class UserControllerTest {
     }
 
     @Test
-    void addUser_shouldAssignIncrementingIds() {
+    void addUser_incrementingIds() {
         User user1 = new User();
         user1.setEmail("user1@example.com");
         user1.setLogin("user1");
@@ -161,7 +161,7 @@ class UserControllerTest {
     }
 
     @Test
-    void update_shouldUpdateExistingUser() {
+    void update_existingUser() {
         User original = new User();
         original.setEmail("original@example.com");
         original.setLogin("originalLogin");
@@ -187,7 +187,7 @@ class UserControllerTest {
     }
 
     @Test
-    void update_shouldSetNameToLoginWhenNameIsNull() {
+    void update_nullNameDefaultsToLogin() {
         User original = new User();
         original.setEmail("original@example.com");
         original.setLogin("originalLogin");
@@ -208,7 +208,7 @@ class UserControllerTest {
     }
 
     @Test
-    void update_shouldThrowWhenEmailIsInvalid() {
+    void update_invalidEmail() {
         User original = new User();
         original.setEmail("original@example.com");
         original.setLogin("originalLogin");
@@ -226,7 +226,7 @@ class UserControllerTest {
     }
 
     @Test
-    void update_shouldThrowWhenLoginIsInvalid() {
+    void update_invalidLogin() {
         User original = new User();
         original.setEmail("original@example.com");
         original.setLogin("originalLogin");
@@ -244,7 +244,7 @@ class UserControllerTest {
     }
 
     @Test
-    void update_shouldThrowWhenBirthdayIsInFuture() {
+    void update_futureBirthday() {
         User original = new User();
         original.setEmail("original@example.com");
         original.setLogin("originalLogin");
@@ -262,7 +262,7 @@ class UserControllerTest {
     }
 
     @Test
-    void update_shouldThrowWhenUserNotFound() {
+    void update_idNotFound() {
         User updated = new User();
         updated.setId(999L);
         updated.setEmail("updated@example.com");
@@ -274,13 +274,13 @@ class UserControllerTest {
     }
 
     @Test
-    void findAll_shouldReturnEmptyCollectionWhenNoUsers() {
+    void findAll_emptyInitially() {
         Collection<User> users = controller.findAll();
         assertTrue(users.isEmpty());
     }
 
     @Test
-    void findAll_shouldReturnAllUsers() {
+    void findAll_returnsAllUsers() {
         User user1 = new User();
         user1.setEmail("user1@example.com");
         user1.setLogin("user1");

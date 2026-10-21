@@ -91,7 +91,7 @@ public class FilmController {
             log.info("Фильм обновлен успешно");
             return oldFilm;
         }
-        throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
+        throw new NotFoundException(String.format("Фильм с id = %d не найден", newFilm.getId()));
     }
 
     @GetMapping

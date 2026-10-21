@@ -30,7 +30,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void addFilm_shouldAddValidFilmAndAssignId() {
+    void addFilm_valid() {
         Film film = createValidFilm();
         Film added = filmController.addFilm(film);
 
@@ -47,7 +47,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void addFilm_shouldAssignIncrementingIds() {
+    void addFilm_incrementingIds() {
         Film first = createValidFilm();
         Film second = createValidFilm();
         second.setName("Second Film");
@@ -61,7 +61,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void addFilm_shouldThrowWhenNameIsNull() {
+    void addFilm_nullName() {
         Film film = createValidFilm();
         film.setName(null);
 
@@ -73,7 +73,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void addFilm_shouldThrowWhenNameIsBlank() {
+    void addFilm_blankName() {
         Film film = createValidFilm();
         film.setName("   ");
 
@@ -85,7 +85,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void addFilm_shouldThrowWhenDescriptionTooLong() {
+    void addFilm_descriptionTooLong() {
         Film film = createValidFilm();
         film.setDescription("a".repeat(201));
 
@@ -97,7 +97,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void addFilm_shouldAcceptDescriptionOfExactly200Chars() {
+    void addFilm_description200Chars() {
         Film film = createValidFilm();
         film.setDescription("a".repeat(200));
 
@@ -105,7 +105,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void addFilm_shouldThrowWhenReleaseDateBefore1895_12_28() {
+    void addFilm_releaseDateBefore1895() {
         Film film = createValidFilm();
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
 
@@ -117,7 +117,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void addFilm_shouldAcceptReleaseDateOn1895_12_28() {
+    void addFilm_releaseDate1895_12_28() {
         Film film = createValidFilm();
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
 
@@ -125,7 +125,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void addFilm_shouldThrowWhenDurationIsNegative() {
+    void addFilm_negativeDuration() {
         Film film = createValidFilm();
         film.setDuration(-1L);
 
@@ -137,7 +137,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void addFilm_shouldAcceptZeroDuration() {
+    void addFilm_zeroDuration() {
         Film film = createValidFilm();
         film.setDuration(0L);
 
@@ -145,7 +145,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void update_shouldUpdateExistingFilm() {
+    void update_existingFilm() {
         Film original = createValidFilm();
         Film added = filmController.addFilm(original);
 
@@ -170,7 +170,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void update_shouldThrowWhenIdNotFound() {
+    void update_idNotFound() {
         Film update = createValidFilm();
         update.setId(999L);
 
@@ -182,7 +182,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void update_shouldValidateName() {
+    void update_invalidName() {
         Film original = createValidFilm();
         Film added = filmController.addFilm(original);
 
@@ -194,7 +194,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void update_shouldValidateDescriptionLength() {
+    void update_descriptionTooLong() {
         Film original = createValidFilm();
         Film added = filmController.addFilm(original);
 
@@ -206,7 +206,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void update_shouldValidateReleaseDate() {
+    void update_invalidReleaseDate() {
         Film original = createValidFilm();
         Film added = filmController.addFilm(original);
 
@@ -218,7 +218,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void update_shouldValidateDuration() {
+    void update_invalidDuration() {
         Film original = createValidFilm();
         Film added = filmController.addFilm(original);
 
@@ -230,12 +230,12 @@ class FilmControllerTest {
     }
 
     @Test
-    void findAll_shouldReturnEmptyCollectionInitially() {
+    void findAll_emptyInitially() {
         assertTrue(filmController.findAll().isEmpty());
     }
 
     @Test
-    void findAll_shouldReturnAllAddedFilms() {
+    void findAll_returnsAllFilms() {
         Film first = createValidFilm();
         Film second = createValidFilm();
         second.setName("Second");
