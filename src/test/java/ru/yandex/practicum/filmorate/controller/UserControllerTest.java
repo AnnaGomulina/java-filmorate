@@ -17,7 +17,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller = new UserController();
+        controller = new UserController(null);
     }
 
     @Test
