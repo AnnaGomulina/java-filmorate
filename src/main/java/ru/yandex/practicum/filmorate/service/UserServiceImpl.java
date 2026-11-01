@@ -20,6 +20,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void addFriend(Long id1, Long id2) {
+        checkUserExists(id1);
+        checkUserExists(id2);
         log.info("Пользователь с id {} добавил друга с id {}", id1, id2);
         userStorage.get(id1).getFriends().add(id2);
         userStorage.get(id2).getFriends().add(id1);
@@ -27,6 +29,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void removeFriend(Long id1, Long id2) {
+        checkUserExists(id1);
+        checkUserExists(id2);
         log.info("Пользователь с id {} удалил друга с id {}", id1, id2);
         userStorage.get(id1).getFriends().remove(id2);
         userStorage.get(id2).getFriends().remove(id1);
@@ -34,6 +38,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Collection<User> mutualFriends(Long id1, Long id2) {
+        checkUserExists(id1);
+        checkUserExists(id2);
         log.info("Общие друзья пользователя с id {} с пользователем с id {}", id1, id2);
         Collection<User> mutualFriends = new ArrayList<>();
         for (Long id : userStorage.get(id1).getFriends()) {
@@ -109,6 +115,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Collection<User> usersFriends(Long id) {
+        checkUserExists(id);
         return userStorage.get(id).getFriends().stream().map(id1 -> userStorage.get(id1)).toList();
+    }
+
+    private void checkUserExists(Long id) {
+        if (!userStorage.containsKey(id)) {
+            throw new NotFoundException(String.format("Пользователь с id = %d не найден", id));
+        }
     }
 }

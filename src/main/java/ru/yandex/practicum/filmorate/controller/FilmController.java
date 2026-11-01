@@ -16,16 +16,16 @@ public class FilmController {
     private final FilmService filmService;
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@RequestParam Long id, @RequestParam Long userId) {
+    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@RequestParam Long id, @RequestParam Long userId) {
+    public void removeLike(@PathVariable Long id, @PathVariable Long userId) {
         filmService.removeLike(id, userId);
     }
 
-    @GetMapping("/popular?count={count}")
+    @GetMapping("/popular")
     public Collection<Film> popular10Films(@RequestParam(defaultValue = "10") Long count) {
         return filmService.popularFilms(count);
     }

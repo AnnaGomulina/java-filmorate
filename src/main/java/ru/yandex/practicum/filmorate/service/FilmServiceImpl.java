@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -16,24 +17,29 @@ import java.util.Collection;
 @Service
 public class FilmServiceImpl implements FilmService {
     private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
 
     @Override
     public void addLike(Long filmId, Long userId) {
+        checkFilmExists(filmId);
+        checkUserExists(userId);
         log.info("Пользователь с id {} лайкнул фильм с id {}", userId, filmId);
-        filmStorage.get(filmId).getLikes().add(filmStorage.get(userId).getId());
+        filmStorage.get(filmId).getLikes().add(userId);
     }
 
     @Override
     public void removeLike(Long filmId, Long userId) {
+        checkFilmExists(filmId);
+        checkUserExists(userId);
         log.info("Пользователь с id {} удалил лайк у фильма с id {}", userId, filmId);
-        filmStorage.get(filmId).getLikes().remove(filmStorage.get(userId).getId());
+        filmStorage.get(filmId).getLikes().remove(userId);
     }
 
     @Override
     public Collection<Film> popularFilms(Long count) {
         log.info("Популярные фильмы {}", count);
         return filmStorage.getAll().stream()
-                .sorted((film1, film2) -> film1.getLikes().size() - film2.getLikes().size())
+                .sorted((film1, film2) -> Integer.compare(film2.getLikes().size(), film1.getLikes().size()))
                 .limit(count)
                 .toList();
     }
@@ -109,5 +115,17 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public Collection<Film> findAll() {
         return filmStorage.getAll();
+    }
+
+    private void checkFilmExists(Long id) {
+        if (!filmStorage.containsKey(id)) {
+            throw new NotFoundException(String.format("Фильм с id = %d не найден", id));
+        }
+    }
+
+    private void checkUserExists(Long id) {
+        if (!userStorage.containsKey(id)) {
+            throw new NotFoundException(String.format("Пользователь с id = %d не найден", id));
+        }
     }
 }
