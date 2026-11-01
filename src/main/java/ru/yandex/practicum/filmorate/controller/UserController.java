@@ -13,14 +13,16 @@ import java.util.Collection;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
+    private static final String FRIENDS_PATH = "/{id}/friends/{friendId}";
+
     private final UserService userService;
 
-    @PutMapping("/{id}/friends/{friendId}")
+    @PutMapping(FRIENDS_PATH)
     public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
         userService.addFriend(id, friendId);
     }
 
-    @DeleteMapping("/{id}/friends/{friendId}")
+    @DeleteMapping(FRIENDS_PATH)
     public void removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
         userService.removeFriend(id, friendId);
     }
